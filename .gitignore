@@ -1,0 +1,21 @@
+# PyTorch / Deep Learning
+*.pth
+*.pt
+data/
+/data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# OS / System
+.DS_Store
+Thumbs.db
+
+# Exclude temporary scripts
+check_params.py
