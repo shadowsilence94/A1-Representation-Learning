@@ -19,3 +19,4 @@ Thumbs.db
 
 # Exclude temporary scripts
 check_params.py
+*.html
