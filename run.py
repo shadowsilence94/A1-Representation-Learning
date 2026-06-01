@@ -215,7 +215,7 @@ def train_model(model_name: str, model: nn.Module, train_loader: DataLoader, val
 
             print(f"{phase.capitalize()} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f} | Time: {epoch_time:.1f}s")
 
-            # Deep copy the model weights if we have a new best validation accuracy
+            # Deep copy the model weights if I have a new best validation accuracy
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
