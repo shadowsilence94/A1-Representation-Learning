@@ -55,7 +55,12 @@ def get_dataloaders(model_name: str, batch_size: int) -> Tuple[DataLoader, DataL
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
     ])
 
-    data_root = "/tmp/cifar10_data"
+    # Determine dataset root dynamically for cross-platform compatibility
+    import sys
+    if 'google.colab' in sys.modules:
+        data_root = "/tmp/cifar10_data"
+    else:
+        data_root = "./data"
     train_dataset = datasets.CIFAR10(root=data_root, train=True, download=True, transform=transform)
     # Split train set (50k images) into 40k train and 10k validation
     train_subset, val_subset = random_split(train_dataset, [40000, 10000])

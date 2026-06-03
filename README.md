@@ -37,14 +37,16 @@ python3 run.py --model resnet18 --dataset cifar10 --test --weights resnet18_cifa
 
 The following table summarizes the parameters, accuracy, and training speed of each architecture configuration on CIFAR-10:
 
-| Model | # Params | Test Accuracy | Time/epoch | Architecture Type |
-| :--- | :---: | :---: | :---: | :--- |
-| AlexNet (from scratch) | 58,322,314 | 63.94% | ~38s | CNN |
-| GoogLeNet (from scratch) | 6,285,226 | 97.92% | ~110s | CNN + Inception |
-| ResNet-18 (from scratch) | 11,173,962 | 94.66% | ~26s | CNN + Skip connections |
-| ResNet-18 (pretrained) | 11,181,642 | 96.50% | ~30s | CNN + Skip connections |
-| ViT-Small (from scratch) | 1,205,898 | 79.97% | ~50s | Transformer |
-| ViT-B/16 (pretrained, fine-tuned) | 85,806,346 | 98.20% | ~180s | Transformer |
+| Model Configuration | # Params | Test/Val Accuracy | Time/epoch | Type | Source |
+| :--- | :---: | :---: | :---: | :--- | :--- |
+| AlexNet (Sequential, scratch) | 58,322,314 | **64.36%** (Val) | ~176s | CNN | Notebook Run |
+| AlexNet (Module, scratch) | 58,322,314 | **65.77%** (Val) | ~126s | CNN | Notebook Run |
+| AlexNet (with LRN, scratch) | 58,322,314 | 63.94% (Test) | ~38s | CNN | Reference (`run.py`) |
+| GoogLeNet (scratch) | 6,285,226 | **98.06%** (Val) | ~343s | CNN + Inception | Notebook Run |
+| ResNet-18 (scratch) | 11,173,962 | **92.88%** (Val) | ~94s | CNN + Skip | Notebook Run |
+| ResNet-18 (pretrained) | 11,181,642 | 96.50% (Test) | ~30s | CNN + Skip | Reference (`run.py`) |
+| ViT-Small (scratch) | 1,205,898 | **81.01%** (Val) | ~44s | Transformer | Notebook Run |
+| ViT-B/16 (pretrained, fine-tuned) | 85,806,346 | 98.20% (Test) | ~180s | Transformer | Reference (`run.py`) |
 
 *\*Note: For GoogLeNet, the parameter count excludes the two auxiliary classifiers during evaluation mode (which are only active during training and total 10,635,966 parameters with them active).*
 
@@ -54,8 +56,8 @@ The following table summarizes the parameters, accuracy, and training speed of e
 
 ### 3.1. GoogLeNet vs. AlexNet (From Scratch Comparison)
 * **Parameter Efficiency**: GoogLeNet has roughly **9x fewer parameters** than AlexNet (6.28M vs. 58.3M). GoogLeNet replaces the memory-intensive fully-connected layers at the end of AlexNet with a global average pooling layer, and uses 1x1 convolutions as "bottleneck" layers to reduce channel dimensions before expensive 3x3 and 5x5 filters.
-* **Speed of Training**: Despite having significantly fewer parameters, GoogLeNet is **~3x slower per epoch** than AlexNet (~110s vs. ~38s). The parallel branching structure of Inception modules incurs high GPU kernel launch latencies, creating execution bottlenecks.
-* **Accuracy**: GoogLeNet scratch achieves **97.92% test accuracy**, whereas AlexNet scratch reaches only **63.94%**. GoogLeNet's deeper layers and multi-scale receptive fields within Inception blocks extract more robust representations, whereas AlexNet's shallow sequence of large kernels overfits quickly on smaller datasets.
+* **Speed of Training**: Despite having significantly fewer parameters, GoogLeNet is slower per epoch than AlexNet (~343s vs. ~126s–176s on local MPS; ~110s vs. ~38s on reference GPU). The parallel branching structure of Inception modules incurs high GPU kernel launch latencies, creating execution bottlenecks.
+* **Accuracy**: GoogLeNet scratch achieves **98.06% validation accuracy** (**97.92%** test in reference), whereas AlexNet sequential/module scratch reaches **64.36% / 65.77%** validation (**63.94%** test in reference). GoogLeNet's deeper layers and multi-scale receptive fields within Inception blocks extract more robust representations, whereas AlexNet's shallow sequence of large kernels overfits quickly on smaller datasets.
 
 ### 3.2. Pretrained Models, Capacity, and Generalization
 Pretrained models perform significantly better than models trained from scratch on small target datasets like CIFAR-10. Pretraining on ImageNet allows the network to learn low-level visual features (edges, textures, shapes) that generalize well across domains. In two-stage fine-tuning:
@@ -67,6 +69,7 @@ In deep feedforward networks, backpropagated gradients are repeatedly multiplied
 ResNet-18 introduces **residual blocks** with skip connections ($H(x) = F(x) + x$). During backpropagation:
 $$\frac{\partial \mathcal{L}}{\partial x} = \frac{\partial \mathcal{L}}{\partial H} \cdot \left(\frac{\partial F}{\partial x} + 1\right)$$
 The additive term $+1$ acts as a gradient highway. Even if the weight path gradients ($\partial F / \partial x$) vanish, the gradient flows directly back to the earlier layers through the shortcut path unimpeded, allowing networks with hundreds of layers to converge.
+In the experiments, ResNet-18 scratch achieved a validation accuracy of **92.88%** in 20 epochs on CIFAR-10.
 
 ### 3.4. Pretrained Transformer vs. Pretrained CNN on CIFAR-10
 * Pretrained ViT-B/16 achieves the highest test accuracy (**98.20%**), demonstrating the massive capacity of attention-based architectures when pretrained on large-scale datasets.
